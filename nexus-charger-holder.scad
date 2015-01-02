@@ -126,9 +126,13 @@ module negatives() {
   }
 }
 
-module pillar(x,y) {
-  translate([x,y,0]) {
-    cylinder(r=stand_r, h=stand_w);
+module pillar(x,y,is_slim) {
+  offset = [
+    (is_slim? stand_r/2 * cos(stand_angle) : 0),
+    (is_slim? stand_r/2 * sin(stand_angle) : 0),
+    0];
+  translate([x , y , 0]  + offset ) {
+    cylinder(r=!is_slim ? stand_r : stand_r/2, h=stand_w);
   }
 }
 
@@ -156,16 +160,16 @@ module stand_body() {
   intersection() {
     union() {
       hull() {
-        pillar(0,0);
-        pillar(0,stand_r/2);
-        pillar(stand_body_l, 0);
-        pillar(stand_body_l - stand_r/2*tan(stand_angle), stand_r/2);
+        pillar(0,0,false);
+        pillar(0,stand_r/2,false);
+        pillar(stand_body_l, 0,false);
+        pillar(stand_body_l - stand_r/2*tan(stand_angle), stand_r/2,false);
       }
       hull() {
-        pillar(stand_body_l, 0);
+        pillar(stand_body_l, 0,true);
         translate([stand_body_l,0,0])
         rotate([0,0,stand_angle])
-        pillar(0, 1.25*stand_body_l*cos(90-stand_angle));
+        pillar(0, -1.25*stand_body_l*sin(-stand_angle), true);
       }
     }
     translate([-stand_r,-stand_r,0])
