@@ -4,6 +4,9 @@
 function what_fillet(l,w) = (norm([w,w]) - l) / (norm([1,1]) - 1);
 e=0.15;
 
+nexus_charger = false;
+
+// nexus charger
 charger_top_w = 58;
 charger_top_diagonal = 80.64;
 charger_top_fillet_r = what_fillet(charger_top_diagonal, charger_top_w) / 2;
@@ -13,8 +16,13 @@ charger_h = 12.2;
 charger_bottom_w = 49.23;
 charger_bottom_diagonal = 65.00;
 charger_bottom_fillet_r = what_fillet(charger_bottom_diagonal, charger_bottom_w) / 2;
-charger_plug_w = 10.40 + e;
-charger_plug_h = charger_h - charger_top_h;
+// round charger
+rcharger_r = 60.05/2;
+rcharger_h = 11.4;
+charger_plug_w = 12.0 + e;
+charger_plug_h = nexus_charger
+  ? charger_h - charger_top_h 
+  : rcharger_h - charger_top_h;
 bottom_offset = (charger_top_w - charger_bottom_w) / 2;
 charger_outset = 1.5;
 $fn=50;
@@ -36,7 +44,7 @@ stand_angle = 30;
 stand_side_angle = 33;
 device_offset = max(n5_thick, n7_thick);
 
-module charger() {
+module nexus_charger() {
   hull() {
     for (x = [0,1],y = [0,1]) {
       translate([
@@ -62,6 +70,19 @@ module charger() {
         cylinder(r=charger_bottom_fillet_r, h=charger_sticker_h);
       }
     }
+  }
+}
+
+module round_charger() {
+  translate([rcharger_r, rcharger_r, charger_h - rcharger_h])
+  cylinder(r=rcharger_r, h = rcharger_h);
+}
+
+module charger() {
+  if (nexus_charger) {
+    nexus_charger();
+  } else {
+    round_charger();
   }
 }
 
@@ -91,11 +112,13 @@ module devices(dev_thick) {
     translate([-wedge_w/2, charger_top_w - offset_y - n6_lip, 2 * dev_thick + e])
     rotate([0, 90, 0])
     cube([n6_lip, n6_lip, n5_w+wedge_w]);
+    // TODO: add tablet lip
   }
 }
 
 module charger_hole() {
-  translate([charger_top_w/2 + charger_plug_w/2,charger_top_w/2,0])
+  offset_z = nexus_charger ? 0 : charger_h - rcharger_h;
+  translate([charger_top_w/2 + charger_plug_w/2,charger_top_w/2,offset_z + e])
   rotate([0,0,90])
   cube([stand_w,charger_plug_w,charger_plug_h]);
 }
