@@ -1,5 +1,8 @@
 // Stand for nexus 5 and nexus 7 2013 tablet
 // Has a hole for the chrger
+// Copyright 2015 Rodrigo Chandia rodrigo.chandia@gmail.com
+// License: Creative Commons Attribution-ShareAlike 4.0 International (CC-BY-SA 4.0)
+// For more information see: http://creativecommons.org/licenses/by-sa/4.0/
 
 function what_fillet(l,w) = (norm([w,w]) - l) / (norm([1,1]) - 1);
 e=0.15;
