@@ -1,3 +1,5 @@
+use <tiles2d.scad>
+
 // Stand for nexus 5 and nexus 7 2013 tablet
 // Has a hole for the chrger
 // Copyright 2015 Rodrigo Chandia rodrigo.chandia@gmail.com
@@ -8,29 +10,40 @@ function what_fillet(l,w) = (norm([w,w]) - l) / (norm([1,1]) - 1);
 e=0.15;
 
 nexus_charger = false;
+holes = false;
+hole_size = 4.5;
+ears = true;
+
+// round charger
+// Chinese
+rcharger_r = 70/2;
+rcharger_h = 10.6;
+rcharger_top_h = -1;
+// From stuff/
+//rcharger_r = 60.05/2;
+//rcharger_h = 11.4;
+//rcharger_top_h = 2.9;
 
 // nexus charger
-charger_top_w = 58;
+charger_top_w = nexus_charger ? 58 : rcharger_r*2;
 charger_top_diagonal = 80.64;
 charger_top_fillet_r = what_fillet(charger_top_diagonal, charger_top_w) / 2;
-charger_top_h = 2.9;
+charger_top_h = nexus_charger? 2.9 : rcharger_top_h;
 charger_sticker_h = 0;
 charger_h = 12.2;
 charger_bottom_w = 49.23;
 charger_bottom_diagonal = 65.00;
 charger_bottom_fillet_r = what_fillet(charger_bottom_diagonal, charger_bottom_w) / 2;
-// round charger
-rcharger_r = 60.05/2;
-rcharger_h = 11.4;
 charger_plug_w = 12.0 + e;
 charger_plug_h = nexus_charger
   ? charger_h - charger_top_h 
   : rcharger_h - charger_top_h;
 bottom_offset = (charger_top_w - charger_bottom_w) / 2;
 charger_outset = 1.5;
-$fn=50;
+$fs=1;
 
 n6_lip = 2;
+n5_shield = 0;
 
 n5_w = 70;
 n5_l = 137.5;
@@ -112,7 +125,7 @@ module devices(dev_thick) {
         cube([wedge_w, wedge_w, dev_thick]);
       }
     }
-    translate([-wedge_w/2, charger_top_w - offset_y - n6_lip, 2 * dev_thick + e])
+#    translate([-wedge_w, charger_top_w - offset_y - n6_lip, stand_r + dev_thick + e])
     rotate([0, 90, 0])
     cube([n6_lip, n6_lip, n5_w+wedge_w]);
     // TODO: add tablet lip
@@ -121,7 +134,7 @@ module devices(dev_thick) {
 
 module charger_hole() {
   offset_z = nexus_charger ? 0 : charger_h - rcharger_h;
-  translate([charger_top_w/2 + charger_plug_w/2,charger_top_w/2,offset_z + e])
+  translate([charger_top_w/2 + charger_plug_w/2,charger_top_w/2,offset_z - e])
   rotate([0,0,90])
   cube([stand_w,charger_plug_w,charger_plug_h]);
 }
@@ -130,12 +143,12 @@ module cable_hole() {
     translate([charger_top_w/2 - charger_plug_w/2, charger_top_w+5*stand_r-charger_plug_h, 0])
     rotate([-stand_angle, 0, 0])
     rotate([0,-45,0])
-    translate([0, 0, -stand_w])
-    cube([charger_plug_w/sqrt(2)*2, charger_plug_h, stand_w]);
+    translate([0, -3, -stand_w])
+    cube([charger_plug_w/sqrt(2)*1.5, charger_plug_h, stand_w]);
 }
 
 module negatives() {
-  offset = max(n5_thick, n7_thick);
+  offset = max(n5_thick + n5_shield, n7_thick);
   translate([0, 0, -offset - charger_h]) {
     devices(offset);
     charger_hole();
@@ -177,25 +190,44 @@ module wedge(a, l) {
   }
 }
 
+module wall_of_tubes(r=3) {
+if (holes) {
+  2d_tile(times=[12,15], steps=[10*sin(60),10], directions=[[1,0,0],[0,0,1]],offsets=[0,10*cos(60)])
+  rotate([90,0,0])
+  translate([0,0,-30+e])
+  cylinder(r=r, h=30);
+}
+}
+
 module stand_body() {
   stand_body_l = 4*stand_r + charger_top_w;
+  x_slide = 14;
+  y_slide = -75;
   translate([stand_w,0,0])
   rotate([0,0,90])
   rotate([-90,0,0])
   translate([0,stand_r,0])
   intersection() {
     union() {
-      hull() {
-        pillar(0,0,false);
-        pillar(0,stand_r/2,false);
-        pillar(stand_body_l, 0,false);
-        pillar(stand_body_l - stand_r/2*tan(stand_angle), stand_r/2,false);
+      difference() {
+        hull() {
+          pillar(0,0,false);
+          pillar(0,stand_r/2,false);
+          pillar(stand_body_l, 0,false);
+          pillar(stand_body_l - stand_r/2*tan(stand_angle), stand_r/2,false);
+        }
+        wall_of_tubes(r=hole_size);
       }
-      hull() {
-        pillar(stand_body_l, 0,true);
-        translate([stand_body_l,0,0])
-        rotate([0,0,stand_angle])
-        pillar(0, -1.25*stand_body_l*sin(-stand_angle), true);
+      difference() {
+        hull() {
+          pillar(stand_body_l, 0,true);
+          translate([stand_body_l,0,0])
+          rotate([0,0,stand_angle])
+          pillar(0, -1.25*stand_body_l*sin(-stand_angle), true);
+        }
+        translate([-x_slide*sin(stand_angle)-y_slide*cos(stand_angle),x_slide*cos(stand_angle)-y_slide*sin(stand_angle),0])
+        rotate([0,0,stand_angle-90])
+        wall_of_tubes(r=hole_size);
       }
     }
     translate([-stand_r,-stand_r,0])
@@ -211,5 +243,20 @@ difference() {
   stand_body();
   negatives();
 }
+
+if (ears) {
 ear(-stand_r,-stand_r);
 ear(5,n7_l/2+charger_top_w/2);
+//ear(-12,43);
+//ear(-12,9);
+//ear(-35,-15);
+//ear(-44,9);
+//ear(-44,44);
+//ear(-44,78);
+//ear(-65,71);
+//ear(-90,62);
+//ear(-100,87);
+ear(-69,102);
+ear(-50,110);
+//ear(5,115);
+}
