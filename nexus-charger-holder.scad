@@ -16,13 +16,13 @@ ears = true;
 
 // round charger
 // Chinese
-rcharger_r = 70/2;
-rcharger_h = 10.6;
-rcharger_top_h = -1;
+//rcharger_r = 70/2;
+//rcharger_h = 10.6;
+//rcharger_top_h = -1;
 // From stuff/
-//rcharger_r = 60.05/2;
-//rcharger_h = 11.4;
-//rcharger_top_h = 2.9;
+rcharger_r = 60.05/2;
+rcharger_h = 11.4;
+rcharger_top_h = 2.9;
 
 // nexus charger
 charger_top_w = nexus_charger ? 58 : rcharger_r*2;
@@ -43,7 +43,10 @@ charger_outset = 1.5;
 $fs=1;
 
 n6_lip = 2;
-n5_shield = 0;
+
+// Change this to add extra space for phones with a shield that makes it thicker.
+n5_shield = 3;
+//n5_shield = 0;
 
 n5_w = 70;
 n5_l = 137.5;
